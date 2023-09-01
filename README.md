@@ -1,1 +1,1 @@
-# clg-project
+# Jenkins-declarative-CICD
