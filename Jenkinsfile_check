@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("Clone Code") {
+            steps {
+                echo "Cloning the code"
+                git url: "https://github.com/sanket363/Jenkins-declarative-CICD.git", branch: "main"
+            }
+        }
+        stage("Build") {
+            steps {
+                echo "Building the image"
+                sh "docker build -t my-note-app ."
+            }
+        }
+        stage("Unit Tests") {
+            steps {
+                echo "Running unit tests"
+                sh "docker run my-note-app npm test"  // Adjust this command for your project
+            }
+        }
+        stage("Push to Docker Hub") {
+            steps {
+                echo "Pushing the image to Docker Hub"
+                withCredentials([usernamePassword(credentialsId: "dockerHub", passwordVariable: "dockerHubPass", usernameVariable: "dockerHubUser")]) {
+                    sh "docker tag my-note-app ${env.dockerHubUser}/my-note-app:latest"
+                    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                    sh "docker push ${env.dockerHubUser}/my-note-app:latest"
+                }
+            }
+        }
+        stage("Deploy to Server") {
+            steps {
+                echo "Deploying the container to the server"
+                sh "ssh user@your-server 'docker-compose down && docker-compose up -d'"
+                // Replace 'user' and 'your-server' with your actual SSH credentials and server address
+            }
+        }
+        stage("Integration Tests") {
+            steps {
+                echo "Running integration tests"
+                sh "docker run my-note-app npm run integration-tests"  // Adjust this command for your project
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "Pipeline failed! Sending notifications..."
+            // Add notifications (e.g., email, Slack, or other messaging services) here
+        }
+        success {
+            echo "Pipeline succeeded! Sending notifications..."
+            // Add notifications (e.g., email, Slack, or other messaging services) here
+        }
+    }
+}

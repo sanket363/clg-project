@@ -2,7 +2,7 @@
 
 # Install the Java Development Kit
 sudo apt-get update
-sudo apt-get install openjdk-11-jdk
+sudo apt-get install openjdk-11-jdk curl -y
 
 # Add the Jenkins repository
 curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
